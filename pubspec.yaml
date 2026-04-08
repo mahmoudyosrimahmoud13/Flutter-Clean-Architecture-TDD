@@ -1,0 +1,44 @@
+name: flutter_tdd_course
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.11.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Service locator (Updated for Null Safety)
+  get_it: ^7.7.0
+  
+  # Bloc for state management (Updated for modern Bloc patterns)
+  flutter_bloc: ^8.1.6
+  
+  # Value equality
+  equatable: ^2.0.5
+  
+  # Functional programming (Either, Left, Right)
+  dartz: ^0.10.1
+  
+  # Remote API & Networking
+  connectivity_plus: ^6.1.0 # connectivity is deprecated, use connectivity_plus
+  http: ^1.2.1
+  
+  # Local cache
+  shared_preferences: ^2.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  
+  # Mockito for testing
+  mockito: ^5.4.4
+  # Build runner is now required for Mockito code generation
+  build_runner: ^2.13.1
+  mocktail: ^1.0.4
+
+flutter:
+  uses-material-design: true
