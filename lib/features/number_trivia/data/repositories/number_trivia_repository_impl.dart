@@ -1,14 +1,42 @@
 import 'package:dartz/dartz.dart';
+import 'package:flutter_tdd_course/core/error/exceptions.dart';
+import '../../../../core/platform/network_info.dart';
+import '../dataresourses/number_trivia_local_data_source.dart';
+import '../dataresourses/number_trivia_remote_data_source.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/number_trivia.dart';
 import '../../domain/repositories/number_trivia_repository.dart';
 
-class NumberTriviaRepositoriesImpl implements NumberTriviaRepository {
+class NumberTriviaRepositoryImpl implements NumberTriviaRepository {
+  final NumberTriviaRemoteDataSource remoteDataSource;
+  final NumberTriviaLocalDataSource localDataSource;
+  final NetworkInfo networkInfo;
+
+  NumberTriviaRepositoryImpl({
+    required this.remoteDataSource,
+    required this.localDataSource,
+    required this.networkInfo,
+  });
+
   @override
-  Future<Either<Failure, NumberTrivia>> getConcreteNumberTrivia(int number) {
-    // TODO: implement getConcreteNumberTrivia
-    throw UnimplementedError();
+  Future<Either<Failure, NumberTrivia>> getConcreteNumberTrivia(
+    int number,
+  ) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final remoteTrivia = await remoteDataSource.getConcreteNumberTrivia(
+          number,
+        );
+
+        await localDataSource.cacheNumberTrivia(remoteTrivia);
+        return Right(remoteTrivia);
+      } on ServerException {
+        return left(ServerFailure());
+      }
+    }
+    final localTrivia = await localDataSource.getLastNumberTrivia();
+    return Right(localTrivia);
   }
 
   @override
