@@ -25,6 +25,8 @@ class MainApp extends StatelessWidget {
                   child: Text(
                     'حسبنا الله ونعم الوكيل',
                     style: TextStyle(fontSize: 24, color: Colors.white),
+                    textAlign: .center,
+                    overflow: TextOverflow.fade,
                   ),
                 ),
               ),

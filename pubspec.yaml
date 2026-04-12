@@ -23,7 +23,7 @@ dependencies:
   dartz: ^0.10.1
   
   # Remote API & Networking
-  connectivity_plus: ^6.1.0 # connectivity is deprecated, use connectivity_plus
+  internet_connection_checker: ^1.0.0+1
   http: ^1.2.1
   
   # Local cache
