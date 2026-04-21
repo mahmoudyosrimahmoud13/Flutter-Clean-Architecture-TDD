@@ -1,4 +1,6 @@
+import 'package:dartz/dartz.dart';
 import 'package:flutter_tdd_course/core/util/input_converter.dart';
+import 'package:flutter_tdd_course/features/number_trivia/domain/entities/number_trivia.dart';
 import 'package:flutter_tdd_course/features/number_trivia/domain/usecases/get_concrete_number_trivia.dart';
 import 'package:flutter_tdd_course/features/number_trivia/domain/usecases/get_random_number_trivia.dart';
 import 'package:flutter_tdd_course/features/number_trivia/presentation/bloc/number_trivia_bloc.dart';
@@ -32,5 +34,54 @@ void main() {
   test('initial state Should be empty state', () async {
     //Assert
     expect(bloc.state, equals(Empty()));
+  });
+
+  group('GetTriviaForConcreteNumber', () {
+    final tNumberString = '1';
+    final tNumberParsed = 1;
+    final tNumberTrivia = NumberTrivia(text: 'test text', number: 1);
+
+    test(
+      'should call InputConverter to validate the string and convert the string to unsigned intger',
+      () async {
+        //Arrange
+        when(
+          () => mockInputConverter.stringToUnsignedInteger(
+            number: any(named: 'number'),
+          ),
+        ).thenReturn(Right(tNumberParsed));
+        //Act
+        bloc.add(GetTriviaForConcreteNumber(stringNumber: tNumberString));
+        await untilCalled(
+          () => mockInputConverter.stringToUnsignedInteger(
+            number: any(named: 'number'),
+          ),
+        );
+        //Assert
+        verify(
+          () =>
+              mockInputConverter.stringToUnsignedInteger(number: tNumberString),
+        );
+      },
+    );
+
+    test('Should emit [Error] when the input is invalid', () async {
+      //Arrange
+      when(
+        () => mockInputConverter.stringToUnsignedInteger(
+          number: any(named: 'number'),
+        ),
+      ).thenReturn(Left(InvalidInputFailure()));
+      //Assert later TODO: very important
+      final expected = [Error(message: INVALID_INPUT_FAILURE_MESSAGE)];
+      final futureExpectation = expectLater(
+        bloc.stream,
+        emitsInOrder(expected),
+      );
+
+      bloc.add(const GetTriviaForConcreteNumber(stringNumber: 'abc'));
+
+      await futureExpectation;
+    });
   });
 }
