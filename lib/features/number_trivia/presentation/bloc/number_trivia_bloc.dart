@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter_tdd_course/core/error/failures.dart';
 import 'package:flutter_tdd_course/core/util/input_converter.dart';
 import 'package:flutter_tdd_course/features/number_trivia/domain/entities/number_trivia.dart';
 import 'package:flutter_tdd_course/features/number_trivia/domain/usecases/get_concrete_number_trivia.dart';
@@ -32,7 +31,16 @@ class NumberTriviaBloc extends Bloc<NumberTriviaEvent, NumberTriviaState> {
         inputEither.fold(
           (failure) =>
               emit(const Error(message: INVALID_INPUT_FAILURE_MESSAGE)),
-          (integer) => throw UnimplementedError(),
+          (integer) async {
+            emit(Loading());
+            final failureOrTrivia = await getConcreteNumberTrivia(
+              Params(number: integer),
+            );
+            failureOrTrivia.fold(
+              (failure) => throw UnimplementedError(),
+              (trivia) => emit(Loaded(numberTrivia: trivia)),
+            );
+          },
         );
       }
     });

@@ -29,6 +29,7 @@ void main() {
       getRandomNumberTrivia: mockGetRandomNumberTrivia,
       inputConverter: mockInputConverter,
     );
+    registerFallbackValue(const Params(number: 1));
   });
 
   test('initial state Should be empty state', () async {
@@ -41,15 +42,19 @@ void main() {
     final tNumberParsed = 1;
     final tNumberTrivia = NumberTrivia(text: 'test text', number: 1);
 
+    void setUpInputConverterSuccess() {
+      when(
+        () => mockInputConverter.stringToUnsignedInteger(
+          number: any(named: 'number'),
+        ),
+      ).thenReturn(Right(tNumberParsed));
+    }
+
     test(
       'should call InputConverter to validate the string and convert the string to unsigned intger',
       () async {
         //Arrange
-        when(
-          () => mockInputConverter.stringToUnsignedInteger(
-            number: any(named: 'number'),
-          ),
-        ).thenReturn(Right(tNumberParsed));
+        setUpInputConverterSuccess();
         //Act
         bloc.add(GetTriviaForConcreteNumber(stringNumber: tNumberString));
         await untilCalled(
@@ -83,5 +88,43 @@ void main() {
 
       await futureExpectation;
     });
+
+    test('should get data from the concrete usecase', () async {
+      //Arrange
+      setUpInputConverterSuccess();
+
+      when(
+        () => mockGetConcreteNumberTrivia(any()),
+      ).thenAnswer((_) async => Right(tNumberTrivia));
+      //Act
+      bloc.add(GetTriviaForConcreteNumber(stringNumber: tNumberString));
+      await untilCalled(() => mockGetConcreteNumberTrivia(any()));
+
+      //Assert
+      verify(() => mockGetConcreteNumberTrivia(Params(number: tNumberParsed)));
+    });
+
+    test(
+      'should emit [Loading , Loaded] when data is gotten successfully ',
+      () async {
+        //Arrange
+        setUpInputConverterSuccess();
+
+        when(
+          () => mockGetConcreteNumberTrivia(any()),
+        ).thenAnswer((_) async => Right(tNumberTrivia));
+        //Assert later
+        final expected = [Loading(), Loaded(numberTrivia: tNumberTrivia)];
+
+        //Act
+
+        final futureExpectation = expectLater(
+          bloc.stream,
+          emitsInOrder(expected),
+        );
+        bloc.add(GetTriviaForConcreteNumber(stringNumber: tNumberString));
+        await futureExpectation;
+      },
+    );
   });
 }
