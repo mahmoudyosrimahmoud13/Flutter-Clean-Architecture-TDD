@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:flutter_tdd_course/core/error/failures.dart';
 import 'package:flutter_tdd_course/core/util/input_converter.dart';
 import 'package:flutter_tdd_course/features/number_trivia/domain/entities/number_trivia.dart';
 import 'package:flutter_tdd_course/features/number_trivia/domain/usecases/get_concrete_number_trivia.dart';
@@ -104,17 +105,36 @@ void main() {
       verify(() => mockGetConcreteNumberTrivia(Params(number: tNumberParsed)));
     });
 
+    test('should emit [Loading , Error] when getting date fails ', () async {
+      //Arrange
+      setUpInputConverterSuccess();
+
+      when(
+        () => mockGetConcreteNumberTrivia(any()),
+      ).thenAnswer((_) async => Left(ServerFailure()));
+      //Assert later
+      final expected = [Loading(), Error(message: SERVER_FAILURE_MESSAGE)];
+
+      //Act
+
+      final futureExpectation = expectLater(
+        bloc.stream,
+        emitsInOrder(expected),
+      );
+      bloc.add(GetTriviaForConcreteNumber(stringNumber: tNumberString));
+      await futureExpectation;
+    });
     test(
-      'should emit [Loading , Loaded] when data is gotten successfully ',
+      'should emit [Loading , Error] with a propper message for the error when getting date fails ',
       () async {
         //Arrange
         setUpInputConverterSuccess();
 
         when(
           () => mockGetConcreteNumberTrivia(any()),
-        ).thenAnswer((_) async => Right(tNumberTrivia));
+        ).thenAnswer((_) async => Left(CacheFailure()));
         //Assert later
-        final expected = [Loading(), Loaded(numberTrivia: tNumberTrivia)];
+        final expected = [Loading(), Error(message: CACHE_FAILURE_MESSAGE)];
 
         //Act
 
